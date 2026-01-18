@@ -15,7 +15,7 @@
         "test -d backend/app/api",
         "test -d backend/app/models"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 1
     },
     {
