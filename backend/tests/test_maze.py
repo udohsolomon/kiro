@@ -480,3 +480,59 @@ async def test_list_mazes(client, test_session):
     assert response.status_code == 200
     data = response.json()
     assert data["total"] == 3
+
+
+@pytest.mark.asyncio
+async def test_get_maze(client, test_session):
+    """Test GET /v1/maze/{id} endpoint to get maze details (T-04.4 verification)."""
+    from app.models.maze import Maze
+    import uuid
+
+    # Create a test maze
+    maze_id = uuid.uuid4()
+    test_maze = Maze(
+        id=maze_id,
+        name="Test Maze",
+        difficulty="tutorial",
+        grid_data=SIMPLE_MAZE,
+        width=5,
+        height=5,
+        start_x=1,
+        start_y=1,
+        exit_x=3,
+        exit_y=3,
+        is_active=True,
+    )
+
+    test_session.add(test_maze)
+    await test_session.commit()
+
+    # Test 1: Get existing maze by ID
+    response = await client.get(f"/v1/maze/{maze_id}")
+    assert response.status_code == 200
+    data = response.json()
+
+    # Verify all fields are present
+    assert data["id"] == str(maze_id)
+    assert data["name"] == "Test Maze"
+    assert data["difficulty"] == "tutorial"
+    assert data["width"] == 5
+    assert data["height"] == 5
+    assert data["start_x"] == 1
+    assert data["start_y"] == 1
+    assert data["exit_x"] == 3
+    assert data["exit_y"] == 3
+    assert data["is_active"] is True
+    # Grid data SHOULD be included in detail response
+    assert "grid_data" in data
+    assert data["grid_data"] == SIMPLE_MAZE
+
+    # Test 2: Get non-existent maze returns 404
+    non_existent_id = uuid.uuid4()
+    response = await client.get(f"/v1/maze/{non_existent_id}")
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()
+
+    # Test 3: Invalid UUID format
+    response = await client.get("/v1/maze/not-a-uuid")
+    assert response.status_code == 422  # Validation error
