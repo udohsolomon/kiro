@@ -27,7 +27,7 @@
         "docker compose config | grep -q postgres",
         "docker compose up -d postgres && sleep 3 && docker compose exec postgres pg_isready -U postgres"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 2
     },
     {
@@ -39,7 +39,7 @@
         "docker compose config | grep -q redis",
         "docker compose up -d redis && sleep 2 && docker compose exec redis redis-cli ping"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 3
     },
     {
@@ -51,7 +51,7 @@
         "docker compose up -d",
         "sleep 5 && curl -s http://localhost:8000/health | grep -q ok"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 4
     },
     {
