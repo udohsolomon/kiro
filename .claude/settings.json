@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker*)",
+      "Bash(pytest*)",
+      "Bash(python*)",
+      "Bash(pip*)",
+      "Bash(alembic*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(curl*)",
+      "Bash(jq*)",
+      "Bash(cd*)",
+      "Bash(test*)",
+      "Bash(sleep*)",
+      "Bash(uvicorn*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(rm -rf*)",
+      "Bash(sudo*)"
+    ]
+  }
+}

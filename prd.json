@@ -1,0 +1,161 @@
+{
+  "project": "kiro-labyrinth",
+  "version": "1.0",
+  "current_phase": "Foundation",
+  "tasks": [
+    {
+      "id": "T-01.1",
+      "phase": "Foundation",
+      "category": "Project Setup",
+      "description": "Initialize FastAPI project structure with main.py, config.py, and directory layout",
+      "verification": [
+        "cd backend && python -c 'from app.main import app; print(app.title)'",
+        "test -f backend/app/main.py",
+        "test -f backend/app/config.py",
+        "test -d backend/app/api",
+        "test -d backend/app/models"
+      ],
+      "passes": false,
+      "priority": 1
+    },
+    {
+      "id": "T-01.2",
+      "phase": "Foundation",
+      "category": "Project Setup",
+      "description": "Set up PostgreSQL database with Docker Compose",
+      "verification": [
+        "docker compose config | grep -q postgres",
+        "docker compose up -d postgres && sleep 3 && docker compose exec postgres pg_isready -U postgres"
+      ],
+      "passes": false,
+      "priority": 2
+    },
+    {
+      "id": "T-01.3",
+      "phase": "Foundation",
+      "category": "Project Setup",
+      "description": "Configure Redis for session caching and leaderboard",
+      "verification": [
+        "docker compose config | grep -q redis",
+        "docker compose up -d redis && sleep 2 && docker compose exec redis redis-cli ping"
+      ],
+      "passes": false,
+      "priority": 3
+    },
+    {
+      "id": "T-01.4",
+      "phase": "Foundation",
+      "category": "Project Setup",
+      "description": "Create complete Docker Compose for local development with health endpoint",
+      "verification": [
+        "docker compose up -d",
+        "sleep 5 && curl -s http://localhost:8000/health | grep -q ok"
+      ],
+      "passes": false,
+      "priority": 4
+    },
+    {
+      "id": "T-01.5",
+      "phase": "Foundation",
+      "category": "Project Setup",
+      "description": "Set up pytest with fixtures for database and client testing",
+      "verification": [
+        "test -f backend/tests/conftest.py",
+        "cd backend && pytest tests/ -v --collect-only 2>/dev/null | grep -q 'test session'"
+      ],
+      "passes": false,
+      "priority": 5
+    },
+    {
+      "id": "T-02.1",
+      "phase": "Foundation",
+      "category": "User Authentication",
+      "description": "Implement POST /auth/register endpoint with email, username, password",
+      "verification": [
+        "cd backend && pytest tests/test_auth.py::test_register -v"
+      ],
+      "passes": false,
+      "priority": 6
+    },
+    {
+      "id": "T-02.2",
+      "phase": "Foundation",
+      "category": "User Authentication",
+      "description": "Add password hashing with bcrypt",
+      "verification": [
+        "cd backend && pytest tests/test_auth.py::test_password_hashing -v"
+      ],
+      "passes": false,
+      "priority": 7
+    },
+    {
+      "id": "T-02.3",
+      "phase": "Foundation",
+      "category": "User Authentication",
+      "description": "Generate secure API keys on user registration",
+      "verification": [
+        "cd backend && pytest tests/test_auth.py::test_api_key_generation -v"
+      ],
+      "passes": false,
+      "priority": 8
+    },
+    {
+      "id": "T-02.4",
+      "phase": "Foundation",
+      "category": "User Authentication",
+      "description": "Create API key validation middleware for protected routes",
+      "verification": [
+        "cd backend && pytest tests/test_auth.py::test_api_key_middleware -v"
+      ],
+      "passes": false,
+      "priority": 9
+    },
+    {
+      "id": "T-02.5",
+      "phase": "Foundation",
+      "category": "User Authentication",
+      "description": "Add email verification flow with mock email service",
+      "verification": [
+        "cd backend && pytest tests/test_auth.py::test_email_verification -v"
+      ],
+      "passes": false,
+      "priority": 10
+    },
+    {
+      "id": "T-03.1",
+      "phase": "Foundation",
+      "category": "Database Models",
+      "description": "Create SQLAlchemy models for User, Maze, Submission, Session",
+      "verification": [
+        "cd backend && python -c 'from app.models.user import User; from app.models.maze import Maze; from app.models.submission import Submission; from app.models.session import Session; print(\"Models OK\")'"
+      ],
+      "passes": false,
+      "priority": 11
+    },
+    {
+      "id": "T-03.2",
+      "phase": "Foundation",
+      "category": "Database Models",
+      "description": "Set up Alembic migrations with initial schema",
+      "verification": [
+        "test -f backend/alembic.ini",
+        "test -d backend/alembic/versions",
+        "cd backend && alembic upgrade head"
+      ],
+      "passes": false,
+      "priority": 12
+    },
+    {
+      "id": "T-03.3",
+      "phase": "Foundation",
+      "category": "Database Models",
+      "description": "Create seed script to load tutorial maze data",
+      "verification": [
+        "test -f backend/app/db/seed.py",
+        "cd backend && python -c 'from app.db.seed import seed_mazes; print(\"Seed OK\")'"
+      ],
+      "passes": false,
+      "priority": 13
+    }
+  ]
+}

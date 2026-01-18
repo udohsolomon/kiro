@@ -1,0 +1,2 @@
+# Kiro Labyrinth Starter Package Dependencies
+requests>=2.28.0

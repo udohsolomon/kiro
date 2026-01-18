@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIRO LABYRINTH // MAZE CHALLENGE</title>
+    <link rel="stylesheet" href="css/cyberpunk.css">
+</head>
+<body>
+    <!-- Screen Overlays -->
+    <div class="grid-overlay"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="flex items-center justify-center" style="position: fixed; inset: 0; z-index: 2000; background: var(--bg-dark);">
+        <div class="cyber-loading">INITIALIZING LABYRINTH SYSTEM...</div>
+    </div>
+
+    <!-- HUD - Top Left: System Status -->
+    <div class="hud hud-tl">
+        <div class="data-label">SYSTEM</div>
+        <div class="data-value text-green" id="system-status">ONLINE</div>
+        <div class="data-label mt-2">SESSION</div>
+        <div class="data-value" id="session-id">--</div>
+    </div>
+
+    <!-- HUD - Top Right: Turn Counter -->
+    <div class="hud hud-tr">
+        <div class="data-label">TURNS</div>
+        <div class="data-value" id="turn-count" style="font-size: 36px;">0</div>
+        <div class="data-label mt-2">BEST</div>
+        <div class="data-value text-gold" id="best-score">--</div>
+    </div>
+
+    <!-- HUD - Bottom Left: Position -->
+    <div class="hud hud-bl">
+        <div class="data-label">POSITION</div>
+        <div class="data-value" id="player-pos">0, 0</div>
+        <div class="data-label mt-2">STATUS</div>
+        <div class="data-value" id="player-status">READY</div>
+    </div>
+
+    <!-- HUD - Bottom Right: Maze Info -->
+    <div class="hud hud-br">
+        <div class="data-label">MAZE</div>
+        <div class="data-value" id="maze-name">TUTORIAL</div>
+        <div class="data-label mt-2">SIZE</div>
+        <div class="data-value" id="maze-size">10x10</div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" style="display: none; position: relative; z-index: 10; min-height: 100vh; padding: 100px 40px;">
+
+        <!-- Welcome Screen -->
+        <section id="welcome-screen" class="flex flex-col items-center justify-center" style="min-height: calc(100vh - 200px);">
+            <h1 class="cyber-title mb-2">KIRO LABYRINTH</h1>
+            <p class="cyber-subtitle mb-3">ESCAPE THE MAZE WITH MINIMAL TURNS</p>
+
+            <div class="flex gap-2 mt-3">
+                <button class="cyber-btn cyber-btn-primary" onclick="showScreen('register-screen')">
+                    REGISTER
+                </button>
+                <button class="cyber-btn" onclick="showScreen('login-screen')">
+                    LOGIN
+                </button>
+            </div>
+
+            <div class="mt-3" style="max-width: 600px; text-align: center;">
+                <p class="cyber-subtitle" style="font-size: 12px; line-height: 1.8;">
+                    Navigate through the labyrinth using your custom solver.<br>
+                    Every MOVE counts as a turn. LOOK is FREE.<br>
+                    Beware of MUD - it will trap you for one turn.
+                </p>
+            </div>
+        </section>
+
+        <!-- Registration Screen -->
+        <section id="register-screen" class="flex flex-col items-center justify-center" style="min-height: calc(100vh - 200px); display: none;">
+            <div class="cyber-panel" style="width: 100%; max-width: 400px;">
+                <h2 class="cyber-title mb-3" style="font-size: 1.5rem;">REGISTER</h2>
+
+                <form id="register-form" onsubmit="handleRegister(event)">
+                    <div class="mb-2">
+                        <label class="data-label">USERNAME</label>
+                        <input type="text" class="cyber-input" id="reg-username" placeholder="Enter callsign..." required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="data-label">EMAIL</label>
+                        <input type="email" class="cyber-input" id="reg-email" placeholder="Enter email..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="data-label">PASSWORD</label>
+                        <input type="password" class="cyber-input" id="reg-password" placeholder="Enter password..." required>
+                    </div>
+
+                    <button type="submit" class="cyber-btn cyber-btn-primary" style="width: 100%;">
+                        INITIALIZE ACCOUNT
+                    </button>
+                </form>
+
+                <p class="mt-2" style="text-align: center;">
+                    <span class="cyber-subtitle" style="font-size: 11px;">Already registered? </span>
+                    <a href="#" onclick="showScreen('login-screen')" class="text-cyan" style="font-size: 11px;">LOGIN</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Login Screen -->
+        <section id="login-screen" class="flex flex-col items-center justify-center" style="min-height: calc(100vh - 200px); display: none;">
+            <div class="cyber-panel" style="width: 100%; max-width: 400px;">
+                <h2 class="cyber-title mb-3" style="font-size: 1.5rem;">LOGIN</h2>
+
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="mb-2">
+                        <label class="data-label">EMAIL</label>
+                        <input type="email" class="cyber-input" id="login-email" placeholder="Enter email..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="data-label">PASSWORD</label>
+                        <input type="password" class="cyber-input" id="login-password" placeholder="Enter password..." required>
+                    </div>
+
+                    <button type="submit" class="cyber-btn cyber-btn-primary" style="width: 100%;">
+                        AUTHENTICATE
+                    </button>
+                </form>
+
+                <p class="mt-2" style="text-align: center;">
+                    <span class="cyber-subtitle" style="font-size: 11px;">New user? </span>
+                    <a href="#" onclick="showScreen('register-screen')" class="text-cyan" style="font-size: 11px;">REGISTER</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Dashboard Screen -->
+        <section id="dashboard-screen" class="flex gap-3" style="display: none;">
+            <!-- Left Panel: Controls & Info -->
+            <div style="flex: 0 0 300px;">
+                <div class="cyber-panel mb-2">
+                    <h3 class="data-label mb-2">CHALLENGE SELECT</h3>
+                    <select class="cyber-input" id="maze-select" onchange="selectMaze(this.value)">
+                        <option value="tutorial">TUTORIAL (10x10)</option>
+                        <option value="intermediate">INTERMEDIATE (31x17)</option>
+                        <option value="challenge">CHALLENGE (100x50)</option>
+                    </select>
+
+                    <button class="cyber-btn cyber-btn-primary mt-2" style="width: 100%;" onclick="startSession()">
+                        START SESSION
+                    </button>
+                </div>
+
+                <div class="cyber-panel mb-2">
+                    <h3 class="data-label mb-2">CONTROLS</h3>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex gap-1 justify-center">
+                            <button class="cyber-btn" onclick="move('north')" style="padding: 8px 16px;">N</button>
+                        </div>
+                        <div class="flex gap-1 justify-center">
+                            <button class="cyber-btn" onclick="move('west')" style="padding: 8px 16px;">W</button>
+                            <button class="cyber-btn cyber-btn-pink" onclick="look()" style="padding: 8px 12px;">LOOK</button>
+                            <button class="cyber-btn" onclick="move('east')" style="padding: 8px 16px;">E</button>
+                        </div>
+                        <div class="flex gap-1 justify-center">
+                            <button class="cyber-btn" onclick="move('south')" style="padding: 8px 16px;">S</button>
+                        </div>
+                    </div>
+                    <p class="cyber-subtitle mt-2" style="font-size: 10px; text-align: center;">
+                        MOVE = 1 TURN | LOOK = FREE
+                    </p>
+                </div>
+
+                <div class="cyber-panel">
+                    <h3 class="data-label mb-2">DOWNLOAD STARTER</h3>
+                    <button class="cyber-btn" style="width: 100%;" onclick="downloadStarter()">
+                        GET PACKAGE
+                    </button>
+                    <p class="cyber-subtitle mt-1" style="font-size: 10px;">
+                        Includes Python SDK & examples
+                    </p>
+                </div>
+            </div>
+
+            <!-- Center: Maze Visualization -->
+            <div class="flex-1 flex items-center justify-center">
+                <div class="maze-container" id="maze-container">
+                    <div id="maze-grid" class="maze-grid">
+                        <!-- Maze cells rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Leaderboard -->
+            <div style="flex: 0 0 320px;">
+                <div class="cyber-panel leaderboard">
+                    <div class="leaderboard-header">
+                        <span class="leaderboard-icon">&#9733;</span>
+                        <span class="leaderboard-title">LEADERBOARD</span>
+                    </div>
+                    <ul class="leaderboard-list" id="leaderboard-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Status Log -->
+    <div class="status-log" id="status-log">
+        <div class="status-log-line">SYSTEM BOOT COMPLETE</div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
