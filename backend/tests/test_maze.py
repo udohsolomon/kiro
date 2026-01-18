@@ -390,3 +390,93 @@ XXXXX"""
             maze_text = maze_file.read_text()
             is_valid, error = validate_maze_text(maze_text)
             assert is_valid is True, f"Maze {maze_file.name} failed: {error}"
+
+
+@pytest.mark.asyncio
+async def test_list_mazes(client, test_session):
+    """Test GET /v1/maze endpoint to list mazes (T-04.3 verification)."""
+    from app.models.maze import Maze
+    import uuid
+    from datetime import datetime, timezone
+
+    # Create test mazes
+    maze1 = Maze(
+        id=uuid.uuid4(),
+        name="Tutorial Maze",
+        difficulty="tutorial",
+        grid_data=SIMPLE_MAZE,
+        width=5,
+        height=5,
+        start_x=1,
+        start_y=1,
+        exit_x=3,
+        exit_y=3,
+        is_active=True,
+    )
+    maze2 = Maze(
+        id=uuid.uuid4(),
+        name="Challenge Maze",
+        difficulty="challenge",
+        grid_data=SIMPLE_MAZE,
+        width=5,
+        height=5,
+        start_x=1,
+        start_y=1,
+        exit_x=3,
+        exit_y=3,
+        is_active=True,
+    )
+    maze3 = Maze(
+        id=uuid.uuid4(),
+        name="Inactive Maze",
+        difficulty="intermediate",
+        grid_data=SIMPLE_MAZE,
+        width=5,
+        height=5,
+        start_x=1,
+        start_y=1,
+        exit_x=3,
+        exit_y=3,
+        is_active=False,
+    )
+
+    test_session.add_all([maze1, maze2, maze3])
+    await test_session.commit()
+
+    # Test 1: List all active mazes
+    response = await client.get("/v1/maze")
+    assert response.status_code == 200
+    data = response.json()
+    assert "mazes" in data
+    assert "total" in data
+    # Should only include active mazes (2 out of 3)
+    assert data["total"] == 2
+    assert len(data["mazes"]) == 2
+
+    # Verify maze structure
+    for maze in data["mazes"]:
+        assert "id" in maze
+        assert "name" in maze
+        assert "difficulty" in maze
+        assert "width" in maze
+        assert "height" in maze
+        assert "is_active" in maze
+        # Grid data should NOT be in list response
+        assert "grid_data" not in maze
+
+    # Test 2: Verify ordering (tutorial first)
+    assert data["mazes"][0]["difficulty"] == "tutorial"
+    assert data["mazes"][1]["difficulty"] == "challenge"
+
+    # Test 3: Filter by difficulty
+    response = await client.get("/v1/maze?difficulty=tutorial")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["mazes"][0]["difficulty"] == "tutorial"
+
+    # Test 4: Include inactive mazes
+    response = await client.get("/v1/maze?active_only=false")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 3

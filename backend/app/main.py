@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.api.routes import auth, maze
 
 settings = get_settings()
 
@@ -39,3 +40,8 @@ async def root() -> dict:
         "version": settings.app_version,
         "docs": "/docs",
     }
+
+
+# Include routers
+app.include_router(auth.router, prefix="/v1")
+app.include_router(maze.router, prefix="/v1")
