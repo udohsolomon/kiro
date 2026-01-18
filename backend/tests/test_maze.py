@@ -314,3 +314,79 @@ def test_maze_parser():
         # Verify tutorial maze exists
         tutorial_mazes = [m for m in mazes if "tutorial" in m.name.lower()]
         assert len(tutorial_mazes) >= 1 or any(m.difficulty == "tutorial" for m in mazes)
+
+
+def test_maze_validation():
+    """Test comprehensive maze validation (T-04.2 verification)."""
+    # Test 1: Valid maze should pass
+    is_valid, error = validate_maze_text(SIMPLE_MAZE)
+    assert is_valid is True
+    assert error is None
+
+    # Test 2: Missing start position should fail
+    no_start = """XXXXX
+X...X
+X.X.X
+X..EX
+XXXXX"""
+    is_valid, error = validate_maze_text(no_start)
+    assert is_valid is False
+    assert "start position" in error
+
+    # Test 3: Missing exit position should fail
+    no_exit = """XXXXX
+XS..X
+X.X.X
+X...X
+XXXXX"""
+    is_valid, error = validate_maze_text(no_exit)
+    assert is_valid is False
+    assert "exit position" in error
+
+    # Test 4: Invalid character should fail
+    invalid_char = """XXXXX
+XS..X
+X.X?X
+X..EX
+XXXXX"""
+    is_valid, error = validate_maze_text(invalid_char)
+    assert is_valid is False
+    assert "Invalid character" in error
+
+    # Test 5: Multiple starts should fail
+    multi_start = """XXXXX
+XS.SX
+X.X.X
+X..EX
+XXXXX"""
+    is_valid, error = validate_maze_text(multi_start)
+    assert is_valid is False
+    assert "Multiple start" in error
+
+    # Test 6: Multiple exits should fail
+    multi_exit = """XXXXX
+XS..X
+X.X.X
+XE.EX
+XXXXX"""
+    is_valid, error = validate_maze_text(multi_exit)
+    assert is_valid is False
+    assert "Multiple exit" in error
+
+    # Test 7: Valid maze with all valid characters (X, ., #, S, E)
+    maze_with_mud = """XXXXX
+XS.#X
+X.X.X
+X#.EX
+XXXXX"""
+    is_valid, error = validate_maze_text(maze_with_mud)
+    assert is_valid is True
+    assert error is None
+
+    # Test 8: Validate actual maze files
+    mazes_dir = Path(__file__).parent.parent / "mazes"
+    if mazes_dir.exists():
+        for maze_file in mazes_dir.glob("*.txt"):
+            maze_text = maze_file.read_text()
+            is_valid, error = validate_maze_text(maze_text)
+            assert is_valid is True, f"Maze {maze_file.name} failed: {error}"
