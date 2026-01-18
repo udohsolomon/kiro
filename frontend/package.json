@@ -1,0 +1,11 @@
+{
+  "name": "kiro-labyrinth-frontend",
+  "version": "1.0.0",
+  "description": "Kiro Labyrinth Frontend",
+  "scripts": {
+    "start": "npx serve -s . -l $PORT"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}

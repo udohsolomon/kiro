@@ -1,5 +1,6 @@
 """Session routes for managing maze game sessions."""
 
+import logging
 import uuid
 
 from fastapi import APIRouter, HTTPException, status
@@ -8,6 +9,10 @@ from sqlalchemy import select
 from app.api.deps import DbSession, CurrentUser
 from app.models.maze import Maze
 from app.models.session import Session
+from app.models.user import User
+from app.services.leaderboard_service import get_leaderboard_service
+
+logger = logging.getLogger(__name__)
 from app.schemas.session import (
     SessionCreateRequest,
     SessionResponse,
@@ -200,6 +205,23 @@ async def move(
         from datetime import datetime, timezone
 
         session.completed_at = datetime.now(timezone.utc)
+
+        # Update leaderboard with completion score
+        try:
+            leaderboard_svc = get_leaderboard_service()
+            is_best, new_rank = await leaderboard_svc.update_score(
+                user_id=user.id,
+                username=user.username,
+                maze_id=session.maze_id,
+                score=move_result.turns,
+            )
+            if is_best:
+                logger.info(
+                    f"New personal best! User {user.username} "
+                    f"completed maze in {move_result.turns} turns (rank: {new_rank})"
+                )
+        except Exception as e:
+            logger.warning(f"Failed to update leaderboard: {e}")
 
     await db.commit()
 

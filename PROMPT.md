@@ -46,6 +46,19 @@ Replace TASK_ID and DESCRIPTION with actual values.
 
 Set `"passes": true` for the completed task.
 
+### Step 5b: Update @fix_plan.md
+
+Change the task's checkbox from `- [ ]` to `- [x]` in @fix_plan.md.
+
+For example, if completing T-04.1, change:
+```
+- [ ] **T-04.1**: Create maze parser to load and validate maze files
+```
+to:
+```
+- [x] **T-04.1**: Create maze parser to load and validate maze files
+```
+
 ### Step 6: Log Progress
 
 The progress is automatically logged to progress.txt by the ralph.sh script.
@@ -94,7 +107,7 @@ kiro-labyrinth/
 
 ```bash
 # 1. Find next task
-jq '.tasks[] | select(.passes == false) | {id, description}' prd.json | head -5
+jq '.tasks[] | select(.passes == false) | {id, description}' prd.json | head -30
 
 # 2. Implement the code (use Write/Edit tools)
 
@@ -107,6 +120,8 @@ git add -A
 git commit -m "feat(T-01.1): Initialize FastAPI project structure"
 
 # 5. Update prd.json (set passes: true for T-01.1)
+
+# 5b. Update @fix_plan.md (change "- [ ]" to "- [x]" for T-01.1)
 ```
 
 ## Important Notes

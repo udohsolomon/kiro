@@ -4,9 +4,12 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select
 
 from app.api.deps import DbSession, CurrentUser
+from app.config import get_settings
 from app.models.maze import Maze
 from app.models.submission import Submission
 from app.schemas.submission import (
@@ -17,6 +20,9 @@ from app.schemas.submission import (
 )
 from app.services.submission_service import get_submission_service
 
+settings = get_settings()
+limiter = Limiter(key_func=get_remote_address)
+
 router = APIRouter(tags=["Submissions"])
 
 
@@ -25,9 +31,10 @@ router = APIRouter(tags=["Submissions"])
     response_model=SubmissionResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit(f"{settings.rate_limit_submissions}/minute")
 async def submit_code(
-    request: SubmissionCreateRequest,
-    http_request: Request,
+    request: Request,
+    submission_data: SubmissionCreateRequest,
     db: DbSession,
     user: CurrentUser,
 ) -> SubmissionResponse:
@@ -37,14 +44,14 @@ async def submit_code(
     Use GET /v1/submission/{id} to check the status.
     """
     # Verify maze exists and is active
-    query = select(Maze).where(Maze.id == request.maze_id)
+    query = select(Maze).where(Maze.id == submission_data.maze_id)
     result = await db.execute(query)
     maze = result.scalar_one_or_none()
 
     if not maze:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Maze not found: {request.maze_id}",
+            detail=f"Maze not found: {submission_data.maze_id}",
         )
 
     if not maze.is_active:
@@ -58,8 +65,8 @@ async def submit_code(
     submission = await service.create_submission(
         db=db,
         user_id=user.id,
-        maze_id=request.maze_id,
-        code=request.code,
+        maze_id=submission_data.maze_id,
+        code=submission_data.code,
     )
 
     return SubmissionResponse(

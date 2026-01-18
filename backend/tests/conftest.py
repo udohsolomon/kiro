@@ -7,16 +7,19 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.config import get_settings
 from app.db.database import Base, get_db
 
+# Import all models to register them with Base.metadata
+from app.models import user, maze, submission, session  # noqa: F401
+
 settings = get_settings()
 
-# Test database URL (use in-memory SQLite for tests)
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# Test database URL (use in-memory SQLite with shared cache)
+TEST_DATABASE_URL = "sqlite+aiosqlite://"
 
 
 @pytest.fixture(scope="session")
@@ -30,9 +33,12 @@ def event_loop() -> Generator:
 @pytest_asyncio.fixture(scope="function")
 async def test_engine():
     """Create a test database engine."""
+    # Use StaticPool to ensure the same connection is reused
+    # This is necessary for in-memory SQLite databases
     engine = create_async_engine(
         TEST_DATABASE_URL,
-        poolclass=NullPool,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
         echo=False,
     )
 

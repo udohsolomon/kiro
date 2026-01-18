@@ -235,7 +235,7 @@ except MemoryError:
         result = await self.execute_code(
             memory_hog_code,
             session_id="test",
-            api_url="http://localhost:8000",
+            api_url=self.settings.api_url,
             memory_limit_mb=50,
             timeout_seconds=30,
         )
@@ -250,7 +250,7 @@ while True:
         result = await self.execute_code(
             infinite_loop_code,
             session_id="test",
-            api_url="http://localhost:8000",
+            api_url=self.settings.api_url,
             timeout_seconds=5,
         )
         results["timeout"] = result.timed_out
@@ -268,7 +268,7 @@ print(f"Elapsed: {elapsed:.2f}s")
         result = await self.execute_code(
             cpu_hog_code,
             session_id="test",
-            api_url="http://localhost:8000",
+            api_url=self.settings.api_url,
             cpu_limit=0.25,
             timeout_seconds=60,
         )
@@ -299,7 +299,7 @@ except Exception as e:
         result = await self.execute_code(
             external_access_code,
             session_id="test",
-            api_url="http://localhost:8000",
+            api_url=self.settings.api_url,
             timeout_seconds=15,
         )
         results["external_blocked"] = (
@@ -332,7 +332,7 @@ if blocked:
         result = await self.execute_code(
             host_access_code,
             session_id="test",
-            api_url="http://localhost:8000",
+            api_url=self.settings.api_url,
             timeout_seconds=15,
         )
         results["host_blocked"] = "PASS" in result.output or not result.success

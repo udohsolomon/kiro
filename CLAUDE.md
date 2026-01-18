@@ -21,7 +21,7 @@ Kiro Labyrinth is a competitive maze-solving challenge platform inspired by AWS 
 | **Database** | PostgreSQL 15 |
 | **Cache** | Redis 7 |
 | **Sandbox** | Docker with resource limits |
-| **Frontend** | React 18, TypeScript, Vite |
+| **Frontend** | Vanilla HTML/CSS/JavaScript (Cyberpunk theme) |
 
 ## Code Conventions
 

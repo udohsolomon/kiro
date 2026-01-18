@@ -13,7 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.models.submission import Submission
 from app.models.maze import Maze
+from app.models.user import User
 from app.services.sandbox_service import get_sandbox_service, SandboxResult
+from app.services.leaderboard_service import get_leaderboard_service
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SubmissionQueue:
@@ -207,6 +213,31 @@ class SubmissionService:
             elif sandbox_result.success and sandbox_result.completed:
                 submission.status = "completed"
                 submission.score = sandbox_result.turns
+
+                # Update leaderboard with new score
+                try:
+                    # Get user for username
+                    user_query = select(User).where(User.id == submission.user_id)
+                    user_result = await db.execute(user_query)
+                    user = user_result.scalar_one_or_none()
+
+                    if user:
+                        leaderboard_svc = get_leaderboard_service()
+                        is_best, new_rank = await leaderboard_svc.update_score(
+                            user_id=submission.user_id,
+                            username=user.username,
+                            maze_id=submission.maze_id,
+                            score=sandbox_result.turns,
+                        )
+                        if is_best:
+                            logger.info(
+                                f"New personal best! User {user.username} "
+                                f"completed maze in {sandbox_result.turns} turns (rank: {new_rank})"
+                            )
+                except Exception as e:
+                    # Log but don't fail the submission
+                    logger.warning(f"Failed to update leaderboard: {e}")
+
             elif sandbox_result.success:
                 submission.status = "failed"
                 submission.error_message = "Maze not completed"

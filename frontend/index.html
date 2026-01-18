@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KIRO LABYRINTH // MAZE CHALLENGE</title>
-    <link rel="stylesheet" href="css/cyberpunk.css">
+    <link rel="stylesheet" href="css/cyberpunk.css?v=7">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <!-- Screen Overlays -->
@@ -25,12 +26,10 @@
         <div class="data-value" id="session-id">--</div>
     </div>
 
-    <!-- HUD - Top Right: Turn Counter -->
-    <div class="hud hud-tr">
+    <!-- HUD - Top Right: Turn Counter (hidden on dashboard) -->
+    <div class="hud hud-tr" id="hud-tr">
         <div class="data-label">TURNS</div>
         <div class="data-value" id="turn-count" style="font-size: 36px;">0</div>
-        <div class="data-label mt-2">BEST</div>
-        <div class="data-value text-gold" id="best-score">--</div>
     </div>
 
     <!-- HUD - Bottom Left: Position -->
@@ -64,6 +63,11 @@
                 <button class="cyber-btn" onclick="showScreen('login-screen')">
                     LOGIN
                 </button>
+            </div>
+
+            <!-- Google Sign-In (initialized dynamically) -->
+            <div class="mt-3" id="google-signin-container">
+                <!-- Google Sign-In button will be rendered here by JavaScript -->
             </div>
 
             <div class="mt-3" style="max-width: 600px; text-align: center;">
@@ -143,9 +147,9 @@
                 <div class="cyber-panel mb-2">
                     <h3 class="data-label mb-2">CHALLENGE SELECT</h3>
                     <select class="cyber-input" id="maze-select" onchange="selectMaze(this.value)">
-                        <option value="tutorial">TUTORIAL (10x10)</option>
+                        <option value="tutorial">TUTORIAL (15x13)</option>
                         <option value="intermediate">INTERMEDIATE (31x17)</option>
-                        <option value="challenge">CHALLENGE (100x50)</option>
+                        <option value="challenge">CHALLENGE (100x49)</option>
                     </select>
 
                     <button class="cyber-btn cyber-btn-primary mt-2" style="width: 100%;" onclick="startSession()">
@@ -193,8 +197,26 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Leaderboard -->
-            <div style="flex: 0 0 320px;">
+            <!-- Right Panel: Stats & Leaderboard -->
+            <div class="right-panel">
+                <!-- Player Stats -->
+                <div class="cyber-panel stats-panel mb-2">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <div class="data-label">TURNS</div>
+                            <div class="data-value text-cyan" id="stats-turns">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="data-label">BEST</div>
+                            <div class="data-value text-gold" id="stats-best">--</div>
+                        </div>
+                    </div>
+                    <button class="cyber-btn cyber-btn-primary profile-btn-inline" id="profile-btn" onclick="toggleProfilePanel()" style="display: none;">
+                        PROFILE
+                    </button>
+                </div>
+
+                <!-- Leaderboard -->
                 <div class="cyber-panel leaderboard">
                     <div class="leaderboard-header">
                         <span class="leaderboard-icon">&#9733;</span>
@@ -208,11 +230,97 @@
         </section>
     </main>
 
+    <!-- Celebration Modal -->
+    <div id="celebration-modal" class="celebration-modal" style="display: none;">
+        <div class="celebration-content cyber-panel">
+            <div class="celebration-icon">&#127881;</div>
+            <h2 class="cyber-title celebration-title">MAZE ESCAPED!</h2>
+
+            <div class="celebration-stats">
+                <div class="stat-item">
+                    <span class="data-label">TOTAL TURNS</span>
+                    <span class="data-value text-cyan" id="celebration-turns">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="data-label">MAZE</span>
+                    <span class="data-value text-green" id="celebration-maze">TUTORIAL</span>
+                </div>
+            </div>
+
+            <div class="celebration-message" id="celebration-message">
+                Congratulations, Navigator!
+            </div>
+
+            <div class="celebration-actions">
+                <button class="cyber-btn cyber-btn-primary" onclick="playAgain()">
+                    PLAY AGAIN
+                </button>
+                <button class="cyber-btn" onclick="closeCelebration()">
+                    CLOSE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Panel -->
+    <div id="profile-overlay" class="profile-overlay" onclick="toggleProfilePanel()" style="display: none;"></div>
+    <div id="profile-panel" class="cyber-panel profile-panel" style="display: none;">
+        <div class="profile-header">
+            <span class="data-label">USER PROFILE</span>
+            <button class="cyber-btn cyber-btn-small" onclick="toggleProfilePanel()">X</button>
+        </div>
+        <div class="profile-content">
+            <div class="profile-field">
+                <span class="data-label">USERNAME</span>
+                <span class="data-value" id="profile-username">--</span>
+            </div>
+            <div class="profile-field">
+                <span class="data-label">EMAIL</span>
+                <span class="data-value profile-email" id="profile-email">--</span>
+            </div>
+            <div class="profile-field">
+                <span class="data-label">API KEY</span>
+                <div class="api-key-display">
+                    <span class="data-value api-key-text" id="profile-api-key">--</span>
+                    <button class="cyber-btn cyber-btn-small" onclick="copyApiKey()">COPY</button>
+                </div>
+                <p class="api-key-hint">Use with: export KIRO_API_KEY=your_key</p>
+            </div>
+            <div class="profile-actions">
+                <button class="cyber-btn cyber-btn-pink" onclick="regenerateApiKey()">REGENERATE KEY</button>
+                <button class="cyber-btn" onclick="logout()">LOGOUT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Modal (shown after regeneration) -->
+    <div id="api-key-modal-overlay" class="profile-overlay" style="display: none; z-index: 2999;"></div>
+    <div id="api-key-modal" class="cyber-panel api-key-modal" style="display: none;">
+        <h3 class="cyber-title" style="font-size: 1.2rem; margin-bottom: 16px; color: var(--cyber-green);">
+            NEW API KEY GENERATED
+        </h3>
+        <p class="data-label">Your new API key (save it now!):</p>
+        <div class="api-key-full" id="api-key-full-display">--</div>
+        <p class="api-key-warning">
+            WARNING: This key will not be shown again!<br>
+            Save it securely before closing this window.
+        </p>
+        <div class="flex gap-2 justify-center">
+            <button class="cyber-btn cyber-btn-primary" onclick="copyNewApiKey()">COPY KEY</button>
+            <button class="cyber-btn" onclick="closeApiKeyModal()">I'VE SAVED IT</button>
+        </div>
+    </div>
+
     <!-- Status Log -->
     <div class="status-log" id="status-log">
         <div class="status-log-line">SYSTEM BOOT COMPLETE</div>
     </div>
 
-    <script src="js/app.js"></script>
+    <!-- Runtime config injection (replaced by build script for Railway) -->
+    <script>
+        // This will be replaced with actual API URL during deployment
+        // window.KIRO_API_URL = 'https://your-api.railway.app';
+    </script>
+    <script src="js/app.js?v=11"></script>
 </body>
 </html>

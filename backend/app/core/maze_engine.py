@@ -188,6 +188,12 @@ class MazeEngine:
         self.height = len(self.grid)
         self.width = max(len(row) for row in self.grid) if self.grid else 0
 
+        # Normalize grid rows to have consistent width (pad with walls)
+        # This prevents coordinate mismatches when rows have different lengths
+        for row in self.grid:
+            while len(row) < self.width:
+                row.append(CellType.WALL)
+
         # Validate maze
         if self.start_pos is None:
             raise ValueError("Maze must have a start position (S)")

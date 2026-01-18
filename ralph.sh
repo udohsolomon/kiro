@@ -3,8 +3,10 @@
 # Usage: ./ralph.sh [MAX_ITERATIONS]
 # Example: ./ralph.sh 10
 
+set -e
+
+CLAUDE_CLI="/home/lazio/.claude/local/claude"
 MAX_ITERATIONS=${1:-50}
-ITERATION=0
 
 echo "Starting Ralph loop (max: $MAX_ITERATIONS iterations)"
 echo "Press Ctrl+C to stop at any time"
@@ -19,8 +21,12 @@ for ((ITERATION=1; ITERATION<=MAX_ITERATIONS; ITERATION++)); do
   # Log iteration start
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting iteration $ITERATION" >> progress.txt
 
-  # Run Claude with PROMPT.md content
-  claude --print "$(cat PROMPT.md)" 2>&1 | tee -a progress.txt
+  # Run Claude with PROMPT.md content via stdin
+  # Using here-string to pass content
+  $CLAUDE_CLI --print < PROMPT.md 2>&1 | tee -a progress.txt
+
+  EXIT_CODE=${PIPESTATUS[0]}
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Claude exited with code $EXIT_CODE" >> progress.txt
 
   # Check for completion
   if ./ralph-check.sh; then

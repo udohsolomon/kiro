@@ -1,0 +1,6 @@
+[build]
+builder = "nixpacks"
+buildCommand = "chmod +x build.sh && ./build.sh"
+
+[deploy]
+startCommand = "npx serve -s . -l $PORT"
