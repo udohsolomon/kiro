@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.api.routes import auth, maze, session, submit
+from app.api.routes import auth, maze, session, submit, leaderboard
 
 settings = get_settings()
 
@@ -47,3 +47,4 @@ app.include_router(auth.router, prefix="/v1")
 app.include_router(maze.router, prefix="/v1")
 app.include_router(session.router, prefix="/v1")
 app.include_router(submit.router, prefix="/v1")
+app.include_router(leaderboard.router, prefix="/v1")

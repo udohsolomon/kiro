@@ -1,7 +1,7 @@
 {
   "project": "kiro-labyrinth",
   "version": "1.0",
-  "current_phase": "Foundation",
+  "current_phase": "Leaderboard",
   "tasks": [
     {
       "id": "T-01.1",
@@ -72,9 +72,9 @@
       "category": "User Authentication",
       "description": "Implement POST /auth/register endpoint with email, username, password",
       "verification": [
-        "cd backend && pytest tests/test_auth.py::test_register -v"
+        "docker compose exec api pytest tests/test_auth.py::TestRegister::test_register -v"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 6
     },
     {
@@ -83,9 +83,9 @@
       "category": "User Authentication",
       "description": "Add password hashing with bcrypt",
       "verification": [
-        "cd backend && pytest tests/test_auth.py::test_password_hashing -v"
+        "docker compose exec api pytest tests/test_auth.py::TestPasswordHashing::test_password_hashing -v"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 7
     },
     {
@@ -94,9 +94,9 @@
       "category": "User Authentication",
       "description": "Generate secure API keys on user registration",
       "verification": [
-        "cd backend && pytest tests/test_auth.py::test_api_key_generation -v"
+        "docker compose exec api pytest tests/test_auth.py::TestApiKeyGeneration::test_api_key_generation -v"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 8
     },
     {
@@ -105,9 +105,9 @@
       "category": "User Authentication",
       "description": "Create API key validation middleware for protected routes",
       "verification": [
-        "cd backend && pytest tests/test_auth.py::test_api_key_middleware -v"
+        "docker compose exec api pytest tests/test_auth.py::TestApiKeyMiddleware::test_api_key_middleware -v"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 9
     },
     {
@@ -116,9 +116,9 @@
       "category": "User Authentication",
       "description": "Add email verification flow with mock email service",
       "verification": [
-        "cd backend && pytest tests/test_auth.py::test_email_verification -v"
+        "docker compose exec api pytest tests/test_auth.py::TestEmailVerification::test_email_verification -v"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 10
     },
     {
@@ -127,9 +127,9 @@
       "category": "Database Models",
       "description": "Create SQLAlchemy models for User, Maze, Submission, Session",
       "verification": [
-        "cd backend && python -c 'from app.models.user import User; from app.models.maze import Maze; from app.models.submission import Submission; from app.models.session import Session; print(\"Models OK\")'"
+        "docker compose exec api python -c 'from app.models.user import User; from app.models.maze import Maze; from app.models.submission import Submission; from app.models.session import Session; print(\"Models OK\")'"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 11
     },
     {
@@ -140,9 +140,9 @@
       "verification": [
         "test -f backend/alembic.ini",
         "test -d backend/alembic/versions",
-        "cd backend && alembic upgrade head"
+        "docker compose exec api alembic upgrade head"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 12
     },
     {
@@ -152,10 +152,288 @@
       "description": "Create seed script to load tutorial maze data",
       "verification": [
         "test -f backend/app/db/seed.py",
-        "cd backend && python -c 'from app.db.seed import seed_mazes; print(\"Seed OK\")'"
+        "docker compose exec api python -c 'from app.db.seed import seed_mazes; print(\"Seed OK\")'"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 13
+    },
+    {
+      "id": "T-04.1",
+      "phase": "Maze Engine",
+      "category": "Maze Parser",
+      "description": "Create maze parser to load and validate maze files",
+      "verification": [
+        "test -f backend/app/core/maze_parser.py",
+        "docker compose exec api pytest tests/test_maze.py::test_maze_parser -v"
+      ],
+      "passes": true,
+      "priority": 14
+    },
+    {
+      "id": "T-04.2",
+      "phase": "Maze Engine",
+      "category": "Maze Parser",
+      "description": "Implement maze validation (check S and E exist, walls are valid)",
+      "verification": [
+        "docker compose exec api pytest tests/test_maze.py::test_maze_validation -v"
+      ],
+      "passes": true,
+      "priority": 15
+    },
+    {
+      "id": "T-04.3",
+      "phase": "Maze Engine",
+      "category": "Maze Parser",
+      "description": "Create GET /v1/maze endpoint to list available mazes",
+      "verification": [
+        "docker compose exec api pytest tests/test_maze.py::test_list_mazes -v"
+      ],
+      "passes": true,
+      "priority": 16
+    },
+    {
+      "id": "T-04.4",
+      "phase": "Maze Engine",
+      "category": "Maze Parser",
+      "description": "Create GET /v1/maze/{id} endpoint to get maze details",
+      "verification": [
+        "docker compose exec api pytest tests/test_maze.py::test_get_maze -v"
+      ],
+      "passes": true,
+      "priority": 17
+    },
+    {
+      "id": "T-05.1",
+      "phase": "Maze Engine",
+      "category": "Session Management",
+      "description": "Create POST /v1/session endpoint to start a maze session",
+      "verification": [
+        "docker compose exec api pytest tests/test_session.py::test_create_session -v"
+      ],
+      "passes": true,
+      "priority": 18
+    },
+    {
+      "id": "T-05.2",
+      "phase": "Maze Engine",
+      "category": "Session Management",
+      "description": "Track current position and turn count in session",
+      "verification": [
+        "docker compose exec api pytest tests/test_session.py::test_session_tracking -v"
+      ],
+      "passes": true,
+      "priority": 19
+    },
+    {
+      "id": "T-05.3",
+      "phase": "Maze Engine",
+      "category": "Session Management",
+      "description": "Create GET /v1/session/{id} endpoint to get session state",
+      "verification": [
+        "docker compose exec api pytest tests/test_session.py::test_get_session -v"
+      ],
+      "passes": true,
+      "priority": 20
+    },
+    {
+      "id": "T-06.1",
+      "phase": "Maze Engine",
+      "category": "Movement Logic",
+      "description": "Implement POST /v1/session/{id}/move endpoint for movement",
+      "verification": [
+        "docker compose exec api pytest tests/test_session.py::test_move -v"
+      ],
+      "passes": true,
+      "priority": 21
+    },
+    {
+      "id": "T-06.2",
+      "phase": "Maze Engine",
+      "category": "Movement Logic",
+      "description": "Implement POST /v1/session/{id}/look endpoint (free action)",
+      "verification": [
+        "docker compose exec api pytest tests/test_session.py::test_look -v"
+      ],
+      "passes": true,
+      "priority": 22
+    },
+    {
+      "id": "T-06.3",
+      "phase": "Maze Engine",
+      "category": "Movement Logic",
+      "description": "Handle wall collisions and mud tiles (# = slower)",
+      "verification": [
+        "docker compose exec api pytest tests/test_session.py::test_wall_collision -v",
+        "docker compose exec api pytest tests/test_session.py::test_mud_tiles -v"
+      ],
+      "passes": true,
+      "priority": 23
+    },
+    {
+      "id": "T-06.4",
+      "phase": "Maze Engine",
+      "category": "Movement Logic",
+      "description": "Detect maze completion when reaching exit (E)",
+      "verification": [
+        "docker compose exec api pytest tests/test_session.py::test_maze_completion -v"
+      ],
+      "passes": true,
+      "priority": 24
+    },
+    {
+      "id": "T-07.1",
+      "phase": "Sandbox Execution",
+      "category": "Docker Sandbox",
+      "description": "Create Docker sandbox container for code execution",
+      "verification": [
+        "test -f backend/sandbox/Dockerfile",
+        "docker build -t kiro-sandbox backend/sandbox/"
+      ],
+      "passes": true,
+      "priority": 25
+    },
+    {
+      "id": "T-07.2",
+      "phase": "Sandbox Execution",
+      "category": "Docker Sandbox",
+      "description": "Add resource limits (CPU, memory, timeout) to sandbox",
+      "verification": [
+        "docker compose exec api pytest tests/test_sandbox.py::test_resource_limits -v"
+      ],
+      "passes": true,
+      "priority": 26
+    },
+    {
+      "id": "T-07.3",
+      "phase": "Sandbox Execution",
+      "category": "Docker Sandbox",
+      "description": "Implement network isolation in sandbox",
+      "verification": [
+        "docker compose exec api pytest tests/test_sandbox.py::test_network_isolation -v"
+      ],
+      "passes": true,
+      "priority": 27
+    },
+    {
+      "id": "T-08.1",
+      "phase": "Sandbox Execution",
+      "category": "Submission Pipeline",
+      "description": "Create POST /v1/submit endpoint to accept code submissions",
+      "verification": [
+        "docker compose exec api pytest tests/test_submit.py::test_submit_code -v"
+      ],
+      "passes": true,
+      "priority": 28
+    },
+    {
+      "id": "T-08.2",
+      "phase": "Sandbox Execution",
+      "category": "Submission Pipeline",
+      "description": "Queue submissions for async processing",
+      "verification": [
+        "docker compose exec api pytest tests/test_submit.py::test_submission_queue -v"
+      ],
+      "passes": true,
+      "priority": 29
+    },
+    {
+      "id": "T-08.3",
+      "phase": "Sandbox Execution",
+      "category": "Submission Pipeline",
+      "description": "Execute code in sandbox and capture results",
+      "verification": [
+        "docker compose exec api pytest tests/test_submit.py::test_code_execution -v"
+      ],
+      "passes": true,
+      "priority": 30
+    },
+    {
+      "id": "T-08.4",
+      "phase": "Sandbox Execution",
+      "category": "Submission Pipeline",
+      "description": "Create GET /v1/submission/{id} endpoint to check status",
+      "verification": [
+        "docker compose exec api pytest tests/test_submit.py::test_get_submission -v"
+      ],
+      "passes": true,
+      "priority": 31
+    },
+    {
+      "id": "T-09.1",
+      "phase": "Sandbox Execution",
+      "category": "Security Hardening",
+      "description": "Sanitize and validate submitted code",
+      "verification": [
+        "docker compose exec api pytest tests/test_security.py::test_code_sanitization -v"
+      ],
+      "passes": true,
+      "priority": 32
+    },
+    {
+      "id": "T-09.2",
+      "phase": "Sandbox Execution",
+      "category": "Security Hardening",
+      "description": "Prevent filesystem escape and malicious imports",
+      "verification": [
+        "docker compose exec api pytest tests/test_security.py::test_filesystem_escape -v"
+      ],
+      "passes": true,
+      "priority": 33
+    },
+    {
+      "id": "T-10.1",
+      "phase": "Leaderboard",
+      "category": "Leaderboard Service",
+      "description": "Create GET /v1/leaderboard endpoint",
+      "verification": [
+        "docker compose exec api pytest tests/test_leaderboard.py::test_get_leaderboard -v"
+      ],
+      "passes": true,
+      "priority": 34
+    },
+    {
+      "id": "T-10.2",
+      "phase": "Leaderboard",
+      "category": "Leaderboard Service",
+      "description": "Store leaderboard in Redis sorted set",
+      "verification": [
+        "docker compose exec api pytest tests/test_leaderboard.py::test_redis_storage -v"
+      ],
+      "passes": true,
+      "priority": 35
+    },
+    {
+      "id": "T-10.3",
+      "phase": "Leaderboard",
+      "category": "Leaderboard Service",
+      "description": "Update leaderboard on successful submission",
+      "verification": [
+        "docker compose exec api pytest tests/test_leaderboard.py::test_leaderboard_update -v"
+      ],
+      "passes": true,
+      "priority": 36
+    },
+    {
+      "id": "T-11.1",
+      "phase": "Leaderboard",
+      "category": "Real-Time Updates",
+      "description": "Implement WebSocket for real-time leaderboard updates",
+      "verification": [
+        "docker compose exec api pytest tests/test_leaderboard.py::test_websocket -v"
+      ],
+      "passes": true,
+      "priority": 37
+    },
+    {
+      "id": "T-11.2",
+      "phase": "Leaderboard",
+      "category": "Real-Time Updates",
+      "description": "Broadcast updates when new high scores are set",
+      "verification": [
+        "docker compose exec api pytest tests/test_leaderboard.py::test_broadcast -v"
+      ],
+      "passes": true,
+      "priority": 38
     }
   ]
 }
