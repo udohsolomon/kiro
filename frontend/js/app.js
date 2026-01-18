@@ -174,6 +174,9 @@ async function loadConfig() {
     }
 }
 
+let googleSignInRetries = 0;
+const MAX_GOOGLE_RETRIES = 10;
+
 function initGoogleSignIn() {
     if (!state.googleClientId) {
         document.getElementById('google-signin-container').innerHTML =
@@ -182,25 +185,39 @@ function initGoogleSignIn() {
     }
 
     if (window.google && window.google.accounts) {
-        google.accounts.id.initialize({
-            client_id: state.googleClientId,
-            callback: handleGoogleCredentialResponse,
-            auto_select: false,
-        });
+        try {
+            google.accounts.id.initialize({
+                client_id: state.googleClientId,
+                callback: handleGoogleCredentialResponse,
+                auto_select: false,
+            });
 
-        google.accounts.id.renderButton(
-            document.getElementById("google-signin-container"),
-            {
-                theme: "filled_black",
-                size: "large",
-                text: "signin_with",
-                shape: "rectangular",
-            }
-        );
-        log('GOOGLE SIGN-IN INITIALIZED');
+            google.accounts.id.renderButton(
+                document.getElementById("google-signin-container"),
+                {
+                    theme: "filled_black",
+                    size: "large",
+                    text: "signin_with",
+                    shape: "rectangular",
+                }
+            );
+            log('GOOGLE SIGN-IN INITIALIZED');
+            googleSignInRetries = 0;
+        } catch (error) {
+            log(`GOOGLE SIGN-IN ERROR: ${error.message}`);
+            document.getElementById('google-signin-container').innerHTML =
+                '<p class="cyber-subtitle" style="font-size: 10px; color: var(--cyber-orange);">Google Sign-In error. Please refresh.</p>';
+        }
     } else {
-        // Retry after Google library loads
-        setTimeout(initGoogleSignIn, 500);
+        googleSignInRetries++;
+        if (googleSignInRetries < MAX_GOOGLE_RETRIES) {
+            // Retry after Google library loads
+            setTimeout(initGoogleSignIn, 500);
+        } else {
+            log('GOOGLE SIGN-IN: Library failed to load');
+            document.getElementById('google-signin-container').innerHTML =
+                '<p class="cyber-subtitle" style="font-size: 10px; color: var(--cyber-orange);">Google Sign-In unavailable. Please refresh or check your connection.</p>';
+        }
     }
 }
 
