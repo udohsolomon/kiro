@@ -298,7 +298,7 @@ async function handleLogin(event) {
     // For now, we use the API key directly since there's no login endpoint
     // Users should use their API key from verification
     const apiKeyInput = prompt('Enter your API Key (from verification email):');
-    
+
     if (apiKeyInput && apiKeyInput.startsWith('kiro_')) {
         state.apiKey = apiKeyInput;
         localStorage.setItem('kiro_api_key', apiKeyInput);
@@ -314,7 +314,7 @@ async function handleLogin(event) {
     }
 }
 
-window.handleGoogleCredentialResponse = async function(response) {
+window.handleGoogleCredentialResponse = async function (response) {
     // Check both state and sessionStorage for regeneration intent
     const isRegenerating = state.regeneratingKey || sessionStorage.getItem('kiro_regenerate_key') === 'true';
     state.regeneratingKey = false;  // Reset state flag
@@ -576,7 +576,7 @@ async function loadMazes() {
         // Update maze select dropdown
         const select = document.getElementById('maze-select');
         if (select && state.mazes.length > 0) {
-            select.innerHTML = state.mazes.map(maze => 
+            select.innerHTML = state.mazes.map(maze =>
                 `<option value="${maze.id}">${maze.name.toUpperCase()} (${maze.width}x${maze.height})</option>`
             ).join('');
         }
@@ -1164,12 +1164,12 @@ function handleKeyPress(event) {
 
 function downloadStarter() {
     log('DOWNLOADING STARTER PACKAGE...');
-    
+
     // Create download link
     const link = document.createElement('a');
     link.href = '/downloads/starter-package.zip';
     link.download = 'kiro-labyrinth-starter.zip';
-    
+
     // Fallback: show instructions if download not available
     link.onerror = () => {
         alert(`Starter Package Contents:\n
