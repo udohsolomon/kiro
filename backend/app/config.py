@@ -35,7 +35,11 @@ class Settings(BaseSettings):
     def validate_database_url(cls, v: str) -> str:
         """Convert standard postgresql:// URL to asyncpg format for Railway compatibility."""
         if v.startswith("postgresql://"):
-            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+            url = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+            # Railway private network usually doesn't need SSL, and asyncpg can hang if it tries
+            if "ssl=" not in url and "localhost" not in url and "127.0.0.1" not in url:
+                url += "?ssl=disable"
+            return url
         return v
 
     # Redis

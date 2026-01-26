@@ -23,7 +23,16 @@ config = context.config
 settings = get_settings()
 
 # Override sqlalchemy.url with the actual database URL
+# Override sqlalchemy.url with the actual database URL
 config.set_main_option("sqlalchemy.url", settings.database_url)
+
+# Debug: Print masked URL to verify variable injection
+masked_url = settings.database_url
+if "@" in masked_url:
+    prefix = masked_url.split("@")[0].split("//")[1].split(":")[0]  # user
+    suffix = masked_url.split("@")[1]
+    masked_url = f"postgresql+asyncpg://{prefix}:***@{suffix}"
+print(f"Alembic using database: {masked_url}")
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
