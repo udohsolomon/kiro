@@ -20,6 +20,7 @@ engine = create_async_engine(
     settings.database_url,
     echo=settings.debug,
     future=True,
+    connect_args={"ssl": False} if "localhost" not in settings.database_url else {},
 )
 
 # Create session factory
