@@ -11,6 +11,11 @@ const getApiBaseUrl = () => {
     if (window.KIRO_API_URL) {
         return window.KIRO_API_URL + '/v1';
     }
+    // Detect Railway deployment by hostname
+    if (window.location.hostname.includes('.railway.app')) {
+        // Use the backend service URL (must be configured here for production)
+        return 'https://kiro-production-1bf3.up.railway.app/v1';
+    }
     // Use relative path when served through nginx proxy
     if (window.location.port === '3000') {
         return '/v1';
@@ -22,6 +27,10 @@ const getApiBaseUrl = () => {
 const getConfigUrl = () => {
     if (window.KIRO_API_URL) {
         return window.KIRO_API_URL + '/config';
+    }
+    // Detect Railway deployment by hostname
+    if (window.location.hostname.includes('.railway.app')) {
+        return 'https://kiro-production-1bf3.up.railway.app/config';
     }
     if (window.location.port === '3000') {
         return '/config';
