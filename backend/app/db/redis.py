@@ -19,10 +19,13 @@ async def get_redis() -> redis.Redis:
     global _redis_pool, _redis_client
 
     if _redis_client is None:
-        # Railway's public Redis URL uses TCP proxy which requires SSL
-        # Detect Railway by checking if URL contains 'railway' or proxy domain
         redis_url = settings.redis_url
-        use_ssl = 'railway' in redis_url or 'rlwy.net' in redis_url
+        
+        # Railway's public Redis URL requires SSL/TLS
+        # The TCP proxy returns HTTP 400 if SSL is not used
+        # Force SSL by converting redis:// to rediss://
+        if ('rlwy.net' in redis_url or 'railway' in redis_url) and redis_url.startswith('redis://'):
+            redis_url = redis_url.replace('redis://', 'rediss://', 1)
         
         _redis_pool = redis.ConnectionPool.from_url(
             redis_url,
