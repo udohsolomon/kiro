@@ -1014,9 +1014,14 @@ function connectWebSocket() {
 
     // Build WebSocket URL based on current location
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.port === '3000'
-        ? window.location.host  // Use nginx proxy
-        : 'localhost:8000';     // Direct backend
+    let host;
+    if (window.location.port === '3000') {
+        host = window.location.host;  // Use nginx proxy
+    } else if (window.location.hostname.includes('.railway.app')) {
+        host = 'kiro-production-1bf3.up.railway.app';  // Railway backend
+    } else {
+        host = 'localhost:8000';  // Local development
+    }
     const wsUrl = `${protocol}//${host}/v1/leaderboard/ws`;
 
     try {
