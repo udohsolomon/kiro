@@ -1181,7 +1181,15 @@ function downloadStarter() {
 
     // Create download link
     const link = document.createElement('a');
-    link.href = '/downloads/starter-package.zip';
+
+    // Detect Railway deployment and use backend URL directly
+    if (window.location.hostname.includes('.railway.app')) {
+        link.href = 'https://kiro-production-1bf3.up.railway.app/downloads/starter-package.zip';
+    } else if (window.KIRO_API_URL) {
+        link.href = window.KIRO_API_URL + '/downloads/starter-package.zip';
+    } else {
+        link.href = '/downloads/starter-package.zip';
+    }
     link.download = 'kiro-labyrinth-starter.zip';
 
     // Fallback: show instructions if download not available

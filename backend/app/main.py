@@ -174,14 +174,23 @@ async def get_config() -> dict:
 @app.get("/downloads/starter-package.zip")
 async def download_starter_package():
     """Download the starter package as a ZIP file."""
-    # In Docker, starter-package is mounted at /starter-package
-    # For local dev, fall back to relative path
-    starter_dir = Path("/starter-package")
-    if not starter_dir.exists():
-        starter_dir = Path(__file__).parent.parent.parent / "starter-package"
+    # Check multiple possible locations for starter-package
+    possible_paths = [
+        Path("/starter-package"),           # Docker compose mount
+        Path("/app/starter-package"),       # Railway: copied into backend context
+        Path(__file__).parent.parent / "starter-package",  # Relative to app dir
+        Path(__file__).parent.parent.parent / "starter-package",  # Project root (local dev)
+    ]
 
-    if not starter_dir.exists():
-        logger.error(f"Starter package not found at {starter_dir}")
+    starter_dir = None
+    for path in possible_paths:
+        if path.exists() and path.is_dir():
+            starter_dir = path
+            logger.info(f"Found starter package at: {starter_dir}")
+            break
+
+    if starter_dir is None:
+        logger.error(f"Starter package not found. Checked: {[str(p) for p in possible_paths]}")
         raise HTTPException(status_code=404, detail="Starter package not found")
 
     # Create in-memory ZIP file
